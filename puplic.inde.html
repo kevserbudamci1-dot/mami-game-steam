@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mami Cloud Gaming</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b100d;color:white;font-family:Arial}
+header{padding:22px;background:#151e18;border-bottom:1px solid #334536}
+h1{margin:0;color:#a5ed72}
+main{padding:25px;max-width:1100px;margin:auto}
+.hero{padding:35px 20px;background:linear-gradient(120deg,#203c28,#101811);border-radius:18px}
+h2{font-size:30px}
+p{color:#b5c4b8}
+button{background:#a5ed72;border:0;border-radius:9px;padding:14px 22px;font-weight:bold;font-size:16px}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:15px;margin-top:20px}
+.game{background:#1a241d;border-radius:12px;overflow:hidden}
+.game img{width:100%;aspect-ratio:460/215;object-fit:cover}
+.game div{padding:12px}
+input{padding:12px;width:100%;margin-top:15px;border-radius:8px}
+</style>
+</head>
+<body>
+<header>
+<h1>MAMI CLOUD GAMING</h1>
+<p>STEAM GAME LIBRARY</p>
+</header>
+<main>
+<section class="hero" id="welcome">
+<h2>Oyun dünyana hoş geldin!</h2>
+<p>Steam hesabını bağla ve oyunlarını keşfet.</p>
+<button onclick="location.href='/auth/steam'">
+STEAM İLE GİRİŞ YAP
+</button>
+</section>
+
+<section id="library" hidden>
+<h2>Oyunlarım</h2>
+<p id="player"></p>
+<input id="search" placeholder="Oyun ara...">
+<div class="games" id="games"></div>
+</section>
+</main>
+<script>
+async function start(){
+try{
+const me=await fetch('/api/me').then(r=>r.json());
+if(!me.loggedIn)return;
+document.getElementById('welcome').hidden=true;
+document.getElementById('library').hidden=false;
+document.getElementById('player').textContent=me.user.name;
+const data=await fetch('/api/games').then(r=>r.json());
+const games=Array.isArray(data)?data:[];
+function render(){
+const q=document.getElementById('search').value.toLowerCase();
+document.getElementById('games').innerHTML='';
+games.filter(g=>g.name.toLowerCase().includes(q)).forEach(g=>{
+const card=document.createElement('div');
+card.className='game';
+const img=document.createElement('img');
+img.src='https://cdn.akamai.steamstatic.com/steam/apps/'+g.appid+'/header.jpg';
+const title=document.createElement('div');
+title.textContent=g.name;
+card.append(img,title);
+document.getElementById('games').append(card);
+});
+}
+document.getElementById('search').addEventListener('input',render);
+render();
+}catch(e){console.log(e)}
+}
+start();
+</script>
+</body>
+</html>
